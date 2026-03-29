@@ -20,6 +20,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/sirupsen/logrus"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 var log = logrus.New()
@@ -48,8 +49,22 @@ func Execute() {
 	}
 }
 
+func load(fn string) *openapi3.T {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	doc, err := loader.LoadFromFile(fn)
+	if err != nil {
+		log.Fatalf("load spec: %v", err)
+	}
+	if doc.Paths == nil {
+		log.Fatal("No paths are inside the file. Nothing to do")
+	}
+	return doc
+}
+
 type options struct {
 	filename string
+	rootDoc *openapi3.T
 }
 
 var opts options

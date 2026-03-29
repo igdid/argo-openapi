@@ -16,26 +16,42 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
+	"strings"
 	"github.com/spf13/cobra"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
-	},
+	Short: "Generate Argo Events Sensor",
+	Run: generateSensor,
 }
 
+func showParams(method, name string, operation *openapi3.Operation) {
+	if operation == nil {
+		return
+	}
+	if len(operation.Parameters) == 0 {
+		log.Info(strings.ToUpper(method), " ", name)
+	}
+	for _, p := range operation.Parameters {
+		log.Info(strings.ToUpper(method), " ", name, " - ", p.Value.Name, " in ", p.Value.In)
+	}
+}
+
+func generateSensor(cmd *cobra.Command, args []string) {
+	opts.rootDoc = load(opts.filename)
+	for name, path := range opts.rootDoc.Paths.Map() {
+		showParams("get", name, path.Get)
+		showParams("post", name, path.Post)
+		showParams("put", name, path.Put)
+		showParams("delete", name, path.Delete)
+		showParams("options", name, path.Options)
+		showParams("patch", name, path.Patch)
+		showParams("trace", name, path.Trace)
+	}
+}
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
