@@ -43,7 +43,34 @@ func validateOpenAPI(cmd *cobra.Command, args []string) {
 	if err := doc.Validate(ctx); err != nil {
 		log.Fatalf("invalid spec: %v", err)
 	}
-
+	if doc.Paths != nil {
+		for name, path := range doc.Paths.Map() {
+			if path.Get != nil {
+				if len(path.Get.Parameters) == 0 {
+					log.Info("GET ", name)
+				}
+				for _, p := range path.Get.Parameters {
+					log.Info("GET ", name, " ", p.Value.Name, " ", p.Value.In)
+				}
+			}
+			if path.Post != nil {
+				if len(path.Post.Parameters) == 0 {
+					log.Info("POST ", name)
+				}
+				for _, p := range path.Post.Parameters {
+					log.Info("POST ", name, p)
+				}
+			}
+			if path.Put != nil {
+				if len(path.Put.Parameters) == 0 {
+					log.Info("PUT ", name)
+				}
+				for _, p := range path.Put.Parameters {
+					log.Info("PUT ", name, p)
+				}
+			}
+		}
+	}
 	fmt.Println("OpenAPI spec is valid")
 }
 
