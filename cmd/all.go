@@ -16,25 +16,30 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
-// generateCmd represents the generate command
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate Argo Events Sensor",
+// allCmd represents the all command
+var allCmd = &cobra.Command{
+	Use:   "all",
+	Short: "Generate both server and client code",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("all called")
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(generateCmd)
+	generateCmd.AddCommand(allCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// generateCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// allCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// allCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
