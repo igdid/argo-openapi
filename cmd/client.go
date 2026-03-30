@@ -69,7 +69,12 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	dir := filepath.Dir(opts.filename)
-	if err := os.WriteFile(filepath.Join(dir, "sensor", "sensor.gen.go"), []byte(code), 0644); err != nil {
+	dir = filepath.Join(dir, "sensor")
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+	    log.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "sensor.gen.go"), []byte(code), 0644); err != nil {
 		log.Fatal(err)
 	}
 }
