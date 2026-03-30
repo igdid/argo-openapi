@@ -57,7 +57,8 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		PackageName: "sensor",
 		Generate: codegen.GenerateOptions{
 			Models:         true,
-			GorillaServer:  true,
+			Client:         true,
+			//GorillaServer:  true,
 			Strict:         true,
 		},
 		OutputOptions: codegen.OutputOptions{
