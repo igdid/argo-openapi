@@ -55,7 +55,7 @@ func getGoPackage(protocol string) string {
 		log.Fatal(err)
 	}
 	remoteAddr = utils.SSHtoHTTPS(remoteAddr)
-	goPackage := remoteAddr + strings.TrimPrefix(filepath.Dir(opts.filename, gitRoot))
+	goPackage := remoteAddr + strings.TrimPrefix(filepath.Dir(opts.filename), gitRoot)
 	goPackage = goPackage + "/sensor/proto"
 	return goPackage
 }
@@ -70,11 +70,13 @@ func generateProtobuf(goPackage, targetDir string) {
 
 	cmd := exec.Command(
 		"protoc",
+		"-I/tmp",
 		"--go_out="+targetDir,
 		"--go-grpc_out="+targetDir,
 		"--go_opt=paths=source_relative",
 		"--go-grpc_opt=paths=source_relative",
-		"--go-opt=Mtrigger.proto="+goPackage,
+		"--go_opt=Mtrigger.proto="+goPackage,
+		"--go-grpc_opt=Mtrigger.proto="+goPackage,
 		"/tmp/trigger.proto",
 	)
 	cmd.Stdout = os.Stdout
@@ -89,7 +91,7 @@ func generateSensor(cmd *cobra.Command, args []string) {
 	// Create project dirs
 	dir := filepath.Dir(opts.filename)
 	dir = filepath.Join(dir, "sensor", "proto")
-	err = os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +126,7 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	// Create Protobuf protocol files
-	goPackage = getGoPackage(opts.filename)
+	goPackage := getGoPackage(opts.filename)
 	generateProtobuf(goPackage, dir)
 }
 
