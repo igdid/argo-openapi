@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,9 @@ package cmd
 import (
 	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/sirupsen/logrus"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var log = logrus.New()
@@ -64,7 +64,7 @@ func load(fn string) *openapi3.T {
 
 type options struct {
 	filename string
-	rootDoc *openapi3.T
+	rootDoc  *openapi3.T
 }
 
 var opts options
@@ -80,5 +80,3 @@ func init() {
 	// when this action is called directly.
 	rootCmd.PersistentFlags().StringVarP(&opts.filename, "file", "f", "./openapi.yaml", "Path to openapi protocol")
 }
-
-
