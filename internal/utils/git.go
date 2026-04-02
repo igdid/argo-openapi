@@ -2,10 +2,10 @@ package utils
 
 import (
 	"errors"
-	"os"
-	"strings"
 	"gopkg.in/ini.v1"
+	"os"
 	"path/filepath"
+	"strings"
 )
 
 func FindGitRoot(start string) (string, error) {

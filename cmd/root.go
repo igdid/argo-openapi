@@ -16,11 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"net/url"
+	"os"
 )
 
 var log = logrus.New()
@@ -49,12 +49,28 @@ func Execute() {
 	}
 }
 
-func load(fn string) *openapi3.T {
+func isURL(s string) bool {
+	u, err := url.ParseRequestURI(s)
+	if err != nil {
+		return false
+	}
+
+	return u.Scheme != "" && u.Host != ""
+}
+
+func load(src string) *openapi3.T {
+	var doc *openapi3.T
+	var err error
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
-	doc, err := loader.LoadFromFile(fn)
+	if isURL(src) {
+		url, _ := url.ParseRequestURI(src)
+		doc, err = loader.LoadFromURI(url)
+	} else {
+		doc, err = loader.LoadFromFile(src)
+	}
 	if err != nil {
-		log.Fatalf("load spec: %v", err)
+		log.Fatalf("load spec: %v - %s", err, src)
 	}
 	if doc.Paths == nil {
 		log.Fatal("No paths are inside the file. Nothing to do")
@@ -63,8 +79,9 @@ func load(fn string) *openapi3.T {
 }
 
 type options struct {
-	filename string
-	rootDoc  *openapi3.T
+	src     string
+	target  string
+	rootDoc *openapi3.T
 }
 
 var opts options
@@ -78,5 +95,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.PersistentFlags().StringVarP(&opts.filename, "file", "f", "./openapi.yaml", "Path to openapi protocol")
+	rootCmd.PersistentFlags().StringVarP(&opts.src, "src", "s", "./openapi.yaml", "Path to openapi protocol. It can be an URL or a path")
+	rootCmd.MarkFlagRequired("src")
+	rootCmd.PersistentFlags().StringVarP(&opts.target, "target", "t", "", "Path to a result sensor. It is required if src is an URL")
 }

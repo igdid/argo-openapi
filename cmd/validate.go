@@ -30,7 +30,7 @@ var validateCmd = &cobra.Command{
 }
 
 func validateOpenAPI(cmd *cobra.Command, args []string) {
-	opts.rootDoc = load(opts.filename)
+	opts.rootDoc = load(opts.src)
 	ctx := context.Background()
 
 	if err := opts.rootDoc.Validate(ctx); err != nil {

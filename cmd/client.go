@@ -55,8 +55,7 @@ func getGoPackage(protocol string) string {
 		log.Fatal(err)
 	}
 	remoteAddr = utils.SSHtoHTTPS(remoteAddr)
-	goPackage := remoteAddr + strings.TrimPrefix(filepath.Dir(opts.filename), gitRoot)
-	goPackage = goPackage + "/sensor/proto"
+	goPackage := remoteAddr + strings.TrimPrefix(opts.target, gitRoot)
 	return goPackage
 }
 
@@ -89,9 +88,13 @@ func generateProtobuf(goPackage, targetDir string) {
 
 func generateSensor(cmd *cobra.Command, args []string) {
 	// Create project dirs
-	dir := filepath.Dir(opts.filename)
-	dir = filepath.Join(dir, "sensor", "proto")
-	err := os.MkdirAll(dir, 0755)
+	if !isURL(opts.src) {
+		opts.target = filepath.Dir(opts.src)
+	} else if opts.target == "" {
+		log.Fatal("A target must be specified")
+	}
+	opts.target = filepath.Join(opts.target, "sensor", "proto")
+	err := os.MkdirAll(opts.target, 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,9 +108,9 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		showParams("trace", name, path.Trace)
 	}*/
 	// Create OpenAPI protocol files
-	opts.rootDoc = load(opts.filename)
+	opts.rootDoc = load(opts.src)
 	cfg := codegen.Configuration{
-		PackageName: "sensor",
+		PackageName: "proto",
 		Generate: codegen.GenerateOptions{
 			Models: true,
 			Client: true,
@@ -122,12 +125,12 @@ func generateSensor(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "sensor.gen.go"), []byte(code), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(opts.target, "sensor.gen.go"), []byte(code), 0644); err != nil {
 		log.Fatal(err)
 	}
 	// Create Protobuf protocol files
-	goPackage := getGoPackage(opts.filename)
-	generateProtobuf(goPackage, dir)
+	goPackage := getGoPackage(opts.target)
+	generateProtobuf(goPackage, opts.target)
 }
 
 func init() {
