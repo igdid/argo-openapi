@@ -17,9 +17,11 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 // validateCmd represents the validate command
@@ -29,6 +31,24 @@ var validateCmd = &cobra.Command{
 	Run:   validateOpenAPI,
 }
 
+func showParams(method, name string, operation *openapi3.Operation) {
+	if operation == nil {
+		return
+	}
+	l := log.WithFields(logrus.Fields{
+		"operationID": operation.OperationID,
+	})
+	if len(operation.Parameters) == 0 {
+		l.Info(strings.ToUpper(method), " ", name)
+	}
+	for _, p := range operation.Parameters {
+		l.WithFields(logrus.Fields{
+			"param": p.Value.Name,
+			"in":    p.Value.In,
+		}).Info(strings.ToUpper(method), " ", name)
+	}
+}
+
 func validateOpenAPI(cmd *cobra.Command, args []string) {
 	opts.rootDoc = load(opts.src)
 	ctx := context.Background()
@@ -36,7 +56,16 @@ func validateOpenAPI(cmd *cobra.Command, args []string) {
 	if err := opts.rootDoc.Validate(ctx); err != nil {
 		log.Fatalf("invalid spec: %v", err)
 	}
-	fmt.Println("OpenAPI spec is valid")
+	log.Info("OpenAPI spec is valid. The following methods available:")
+	for name, path := range opts.rootDoc.Paths.Map() {
+		showParams("get", name, path.Get)
+		showParams("post", name, path.Post)
+		showParams("put", name, path.Put)
+		showParams("delete", name, path.Delete)
+		showParams("options", name, path.Options)
+		showParams("patch", name, path.Patch)
+		showParams("trace", name, path.Trace)
+	}
 }
 
 func init() {

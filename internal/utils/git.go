@@ -69,3 +69,17 @@ func SSHtoHTTPS(ssh string) (https string) {
 	https = strings.TrimSuffix(https, ".git")
 	return https
 }
+
+func GetGoPackage(protocol string) (string, error) {
+	gitRoot, err := FindGitRoot(protocol)
+	if err != nil {
+		return "", err
+	}
+	remoteAddr, err := GetGitRemote(gitRoot)
+	if err != nil {
+		return "", err
+	}
+	remoteAddr = SSHtoHTTPS(remoteAddr)
+	goPackage := remoteAddr + strings.TrimPrefix(protocol, gitRoot)
+	return goPackage, nil
+}

@@ -16,14 +16,12 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/igdid/argo-openapi/internal/utils"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 // clientCmd represents the client command
@@ -31,32 +29,6 @@ var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "Generate a client code",
 	Run:   generateSensor,
-}
-
-func showParams(method, name string, operation *openapi3.Operation) {
-	if operation == nil {
-		return
-	}
-	if len(operation.Parameters) == 0 {
-		log.Info(strings.ToUpper(method), " ", name)
-	}
-	for _, p := range operation.Parameters {
-		log.Info(strings.ToUpper(method), " ", name, " - ", p.Value.Name, " in ", p.Value.In)
-	}
-}
-
-func getGoPackage(protocol string) string {
-	gitRoot, err := utils.FindGitRoot(protocol)
-	if err != nil {
-		log.Fatal(err)
-	}
-	remoteAddr, err := utils.GetGitRemote(gitRoot)
-	if err != nil {
-		log.Fatal(err)
-	}
-	remoteAddr = utils.SSHtoHTTPS(remoteAddr)
-	goPackage := remoteAddr + strings.TrimPrefix(opts.target, gitRoot)
-	return goPackage
 }
 
 func generateProtobuf(goPackage, targetDir string) {
@@ -98,15 +70,7 @@ func generateSensor(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*for name, path := range opts.rootDoc.Paths.Map() {
-		showParams("get", name, path.Get)
-		showParams("post", name, path.Post)
-		showParams("put", name, path.Put)
-		showParams("delete", name, path.Delete)
-		showParams("options", name, path.Options)
-		showParams("patch", name, path.Patch)
-		showParams("trace", name, path.Trace)
-	}*/
+
 	// Create OpenAPI protocol files
 	opts.rootDoc = load(opts.src)
 	cfg := codegen.Configuration{
@@ -129,20 +93,13 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	// Create Protobuf protocol files
-	goPackage := getGoPackage(opts.target)
+	goPackage, err := utils.GetGoPackage(opts.target)
+	if err != nil {
+		log.Fatal(err)
+	}
 	generateProtobuf(goPackage, opts.target)
 }
 
 func init() {
 	generateCmd.AddCommand(clientCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// clientCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// clientCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
