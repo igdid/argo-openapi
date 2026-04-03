@@ -33,6 +33,7 @@ var clientCmd = &cobra.Command{
 
 func generateSensor(cmd *cobra.Command, args []string) {
 	createSensorFolders()
+	generateCobra(filepath.Dir(opts.target))
 	createOpenAPIFiles("sensor.gen.go")
 	generateProtobuf(opts.target)
 }
@@ -106,8 +107,30 @@ func generateProtobuf(targetDir string) {
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	log.Info("Generating Protobuf protocol")
+	log.Infof("Generating Protobuf protocol in %s", targetDir)
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("protoc failed: %v", err)
+	}
+}
+
+// Create common files
+func generateCobra(targetDir string) {
+	cmd := exec.Command(
+		"cobra-cli",
+		"init",
+		targetDir,
+		"--viper",
+		"--license",
+		opts.license,
+		"--author",
+		opts.author,
+		"--config",
+		opts.cobraConfig,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	log.Infof("Generating Cobra files in %s", targetDir)
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("cobra-cli failed: %v", err)
 	}
 }

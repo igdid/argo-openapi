@@ -79,9 +79,12 @@ func load(src string) *openapi3.T {
 }
 
 type options struct {
-	src     string
-	target  string
-	rootDoc *openapi3.T
+	src         string
+	target      string
+	author      string
+	cobraConfig string
+	license     string
+	rootDoc     *openapi3.T
 }
 
 var opts options
