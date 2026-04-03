@@ -31,9 +31,63 @@ var clientCmd = &cobra.Command{
 	Run:   generateSensor,
 }
 
-func generateProtobuf(goPackage, targetDir string) {
+func generateSensor(cmd *cobra.Command, args []string) {
+	createSensorFolders()
+	createOpenAPIFiles("sensor.gen.go")
+	generateProtobuf(opts.target)
+}
+
+func init() {
+	generateCmd.AddCommand(clientCmd)
+}
+
+// Create project dirs
+func createSensorFolders() {
+	if !isURL(opts.src) {
+		opts.target = filepath.Dir(opts.src)
+	} else if opts.target == "" {
+		log.Fatal("A target must be specified")
+	}
+	opts.target = filepath.Join(opts.target, "sensor", "proto")
+	err := os.MkdirAll(opts.target, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Create OpenAPI protocol files
+func createOpenAPIFiles(fn string) {
+	opts.rootDoc = load(opts.src)
+	cfg := codegen.Configuration{
+		PackageName: "proto",
+		Generate: codegen.GenerateOptions{
+			Models: true,
+			Client: true,
+			//GorillaServer:  true,
+			Strict: true,
+		},
+		OutputOptions: codegen.OutputOptions{
+			SkipPrune: true,
+		},
+	}
+	code, err := codegen.Generate(opts.rootDoc, cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(opts.target, fn), []byte(code), 0644); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Create Protobuf protocol files
+func generateProtobuf(targetDir string) {
+	goPackage, err := utils.GetGoPackage(targetDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Go Package: ", goPackage)
 	triggerFn := "/tmp/trigger.proto"
-	err := utils.UnpackFile("templates/trigger.proto", triggerFn)
+	err = utils.UnpackFile("templates/trigger.proto", triggerFn)
 	if err != nil {
 		log.Fatal(err, triggerFn)
 	}
@@ -56,50 +110,4 @@ func generateProtobuf(goPackage, targetDir string) {
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("protoc failed: %v", err)
 	}
-}
-
-func generateSensor(cmd *cobra.Command, args []string) {
-	// Create project dirs
-	if !isURL(opts.src) {
-		opts.target = filepath.Dir(opts.src)
-	} else if opts.target == "" {
-		log.Fatal("A target must be specified")
-	}
-	opts.target = filepath.Join(opts.target, "sensor", "proto")
-	err := os.MkdirAll(opts.target, 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create OpenAPI protocol files
-	opts.rootDoc = load(opts.src)
-	cfg := codegen.Configuration{
-		PackageName: "proto",
-		Generate: codegen.GenerateOptions{
-			Models: true,
-			Client: true,
-			//GorillaServer:  true,
-			Strict: true,
-		},
-		OutputOptions: codegen.OutputOptions{
-			SkipPrune: true,
-		},
-	}
-	code, err := codegen.Generate(opts.rootDoc, cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(opts.target, "sensor.gen.go"), []byte(code), 0644); err != nil {
-		log.Fatal(err)
-	}
-	// Create Protobuf protocol files
-	goPackage, err := utils.GetGoPackage(opts.target)
-	if err != nil {
-		log.Fatal(err)
-	}
-	generateProtobuf(goPackage, opts.target)
-}
-
-func init() {
-	generateCmd.AddCommand(clientCmd)
 }
