@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "{{ .AppName }}",
 	Short: "Argo events openapi generated sensor",
-	Long: ` + "`" + `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification` + "`" + `,
+	Long: `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification`,
 }
 
 func Execute() {

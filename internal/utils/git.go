@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"gopkg.in/ini.v1"
 	"os"
 	"path/filepath"
@@ -57,11 +58,11 @@ func SSHtoHTTPS(ssh string) (https string) {
 		if len(parts) == 2 {
 			host := parts[0]
 			path := parts[1]
-			https = "https://" + host + "/" + path
+			https = fmt.Sprintf("https://%s/%s", host, path)
 		}
 	} else if strings.HasPrefix(ssh, "ssh://git@") {
 		// ssh://git@github.com/user/repo.git -> https://github.com/user/repo.git
-		https = "https://" + strings.TrimPrefix(ssh, "ssh://git@")
+		https = fmt.Sprintf("https://%s", strings.TrimPrefix(ssh, "ssh://git@"))
 	} else if strings.HasPrefix(ssh, "https://") {
 		// In case it is already https
 		https = ssh
@@ -80,6 +81,6 @@ func GetGoPackage(protocol string) (string, error) {
 		return "", err
 	}
 	remoteAddr = SSHtoHTTPS(remoteAddr)
-	goPackage := remoteAddr + "/" + strings.TrimPrefix(protocol, gitRoot)
+	goPackage := fmt.Sprintf("%s/%s", remoteAddr, strings.TrimPrefix(protocol, gitRoot))
 	return goPackage, nil
 }

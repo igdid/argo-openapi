@@ -60,8 +60,8 @@ func init() {
 // TODO: Inspect project for existing license
 func getLicense() License {
 	// If explicitly flagged, use that.
-	if opts.userLicense != "" {
-		return findLicense(opts.userLicense)
+	if opts.license != "" {
+		return findLicense(opts.license)
 	}
 
 	// If user wants to have custom license, use that.

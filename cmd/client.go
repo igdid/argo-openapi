@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"github.com/igdid/argo-openapi/internal/utils"
-	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -51,10 +51,10 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		"Copyright":  project.Copyright,
 		"License":    project.Legal.Name,
 	}).Info("Starting code generation")
-	generateSensorProject(filepath.Dir(opts.target))
+	project.generateSensorProject(filepath.Dir(opts.target))
 	project.createOpenAPIFiles("sensor.gen.go")
-	generateProtobuf(opts.target)
-	log.Info(project.AppName + "code generated successfully in " + opts.target)
+	project.generateProtobuf(opts.target)
+	log.Infof("%s code generated successfully in %s", project.AppName, opts.target)
 }
 
 func init() {
@@ -62,9 +62,9 @@ func init() {
 }
 
 // Create Protobuf protocol files
-func generateProtobuf(targetDir string) {
+func (p Project) generateProtobuf(targetDir string) {
 	triggerFn := "/tmp/trigger.proto"
-	err = utils.UnpackFile("templates/trigger.proto", triggerFn)
+	err := utils.UnpackFile("templates/trigger.proto", triggerFn)
 	if err != nil {
 		log.Fatal(err, triggerFn)
 	}
@@ -77,8 +77,8 @@ func generateProtobuf(targetDir string) {
 		"--go-grpc_out="+targetDir,
 		"--go_opt=paths=source_relative",
 		"--go-grpc_opt=paths=source_relative",
-		"--go_opt=Mtrigger.proto="+project.PkgName,
-		"--go-grpc_opt=Mtrigger.proto="+project.PkgName,
+		"--go_opt=Mtrigger.proto="+p.PkgName,
+		"--go-grpc_opt=Mtrigger.proto="+p.PkgName,
 		"/tmp/trigger.proto",
 	)
 	cmd.Stdout = os.Stdout

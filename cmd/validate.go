@@ -23,7 +23,7 @@ import (
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate OpenAPI protocol",
-	Run:   validateOpenAPI,
+	Run:   project.validateOpenAPI,
 }
 
 func init() {

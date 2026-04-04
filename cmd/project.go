@@ -2,10 +2,15 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/igdid/argo-openapi/internal/utils"
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -134,28 +139,30 @@ func (p *Project) generateSensorProject(targetDir string) {
 	// Create main file
 	mainFile, err := os.Create(fmt.Sprintf("%s/main.go", p.rootDir))
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer mainFile.Close()
 
 	// Render main template
-	mainTemplate := template.Must(template.New("main").Parse(utils.Templates.ReadFile("templates/main.go.tpl")))
+	mainTpl, _ := utils.Templates.ReadFile("templates/main.go.tpl")
+	mainTemplate := template.Must(template.New("main").Parse(string(mainTpl)))
 	err = mainTemplate.Execute(mainFile, p)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	// Create main file
 	rootCmdFile, err := os.Create(fmt.Sprintf("%s/root.go", cmdDir))
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	defer rootCmdDir.Close()
+	defer rootCmdFile.Close()
 
 	// Render main template
-	rootTemplate := template.Must(template.New("root").Parse(utils.Templates.ReadFile("templates/cmd/root.go.tpl")))
+	rootTpl, _ := utils.Templates.ReadFile("templates/cmd/root.go.tpl")
+	rootTemplate := template.Must(template.New("root").Parse(string(rootTpl)))
 	err = rootTemplate.Execute(rootCmdFile, p)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 }

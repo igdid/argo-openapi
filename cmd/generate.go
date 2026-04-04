@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var generateCmd = &cobra.Command{
@@ -29,4 +30,5 @@ func init() {
 	generateCmd.PersistentFlags().StringVarP(&opts.license, "license", "l", "", "name of license for the project. It will be passed to cobra-cli")
 	generateCmd.PersistentFlags().StringVarP(&opts.author, "author", "a", "", "author name for copyright attribution. It will be passed to cobra-cli")
 	generateCmd.PersistentFlags().StringVarP(&opts.cobraConfig, "config", "c", "$HOME/.cobra.yaml", "cobra-cli config file")
+	cobra.CheckErr(viper.BindPFlag("author", generateCmd.PersistentFlags().Lookup("author")))
 }

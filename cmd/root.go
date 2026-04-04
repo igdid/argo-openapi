@@ -16,10 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"net/url"
 	"os"
 )
 
