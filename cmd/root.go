@@ -46,11 +46,11 @@ func Execute() {
 	}
 }
 
-// Common argo-openapi options 
+// Common argo-openapi options
 type options struct {
 	// From cmd/root.go
-	src         string
-	target      string
+	src    string
+	target string
 	// From cmd/generate.go
 	license     string
 	author      string

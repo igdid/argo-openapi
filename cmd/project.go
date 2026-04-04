@@ -1,7 +1,12 @@
 package cmd
 
 import (
+	"context"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -11,6 +16,7 @@ type Project struct {
 	Copyright string
 	Legal     License
 	AppName   string
+	rootDir   string
 	rootDoc   *openapi3.T
 }
 
@@ -105,27 +111,28 @@ func load(src string) *openapi3.T {
 	}
 	return doc
 }
+
 // Create common files
-func generateSensorProject(targetDir string) {
+func (p *Project) generateSensorProject(targetDir string) {
 	if !isURL(opts.src) {
 		opts.target = filepath.Dir(opts.src)
 	} else if opts.target == "" {
 		log.Fatal("A target must be specified")
 	}
-	rootDir := filepath.Join(opts.target, "sensor")
+	p.rootDir = filepath.Join(opts.target, "sensor")
 	// Create dir hierarchy
-	opts.target = filepath.Join(rootDir, "proto")
+	opts.target = filepath.Join(p.rootDir, "proto")
 	err := os.MkdirAll(opts.target, 0754)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cmdDir := filepath.Join(rootDir, "cmd")
+	cmdDir := filepath.Join(p.rootDir, "cmd")
 	err = os.MkdirAll(cmdDir, 0754)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// Create main file
-	mainFile, err := os.Create(fmt.Sprintf("%s/main.go", rootDir))
+	mainFile, err := os.Create(fmt.Sprintf("%s/main.go", p.rootDir))
 	if err != nil {
 		return err
 	}

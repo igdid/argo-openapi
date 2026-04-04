@@ -16,12 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
-
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // validateCmd represents the validate command

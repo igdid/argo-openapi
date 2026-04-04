@@ -26,15 +26,35 @@ import (
 
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
-	Use:   "client",
-	Short: "Generate a client code",
+	Use:   "client [app-name]",
+	Short: "Generate a client code for [app-name] integration",
 	Run:   generateSensor,
+	Args:  cobra.ExactArgs(1),
 }
 
 func generateSensor(cmd *cobra.Command, args []string) {
+	goPackage, err := utils.GetGoPackage(opts.target)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Fill the project structure
+	project = Project{
+		AppName:   args[0],
+		Copyright: copyrightLine(),
+		Legal:     getLicense(),
+		PkgName:   goPackage,
+	}
+	// Start code generation
+	log.WithFields(logrus.Fields{
+		"Go Package": project.PkgName,
+		"App Name":   project.AppName,
+		"Copyright":  project.Copyright,
+		"License":    project.Legal.Name,
+	}).Info("Starting code generation")
 	generateSensorProject(filepath.Dir(opts.target))
 	project.createOpenAPIFiles("sensor.gen.go")
 	generateProtobuf(opts.target)
+	log.Info(project.AppName + "code generated successfully in " + opts.target)
 }
 
 func init() {
@@ -43,11 +63,6 @@ func init() {
 
 // Create Protobuf protocol files
 func generateProtobuf(targetDir string) {
-	goPackage, err := utils.GetGoPackage(targetDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Info("Go Package: ", goPackage)
 	triggerFn := "/tmp/trigger.proto"
 	err = utils.UnpackFile("templates/trigger.proto", triggerFn)
 	if err != nil {
@@ -62,8 +77,8 @@ func generateProtobuf(targetDir string) {
 		"--go-grpc_out="+targetDir,
 		"--go_opt=paths=source_relative",
 		"--go-grpc_opt=paths=source_relative",
-		"--go_opt=Mtrigger.proto="+goPackage,
-		"--go-grpc_opt=Mtrigger.proto="+goPackage,
+		"--go_opt=Mtrigger.proto="+project.PkgName,
+		"--go-grpc_opt=Mtrigger.proto="+project.PkgName,
 		"/tmp/trigger.proto",
 	)
 	cmd.Stdout = os.Stdout
