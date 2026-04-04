@@ -1,5 +1,7 @@
 # Argo-OpenAPI
 
+Inspired by [Argo Events](https://argoproj.github.io/events/) and [Cobra CLI](https://github.com/spf13/cobra-cli).
+
 ## Intallation
 1. Install dependencies (Protobuf + GRPC)
 

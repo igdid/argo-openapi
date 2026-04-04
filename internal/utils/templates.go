@@ -6,10 +6,10 @@ import (
 )
 
 //go:embed templates/*
-var templates embed.FS
+var Templates embed.FS
 
 func UnpackFile(fn, targetPath string) error {
-	content, err := templates.ReadFile(fn)
+	content, err := Templates.ReadFile(fn)
 	if err != nil {
 		return err
 	}
