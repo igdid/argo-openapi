@@ -19,7 +19,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Argo Events Sensor",
@@ -30,14 +29,4 @@ func init() {
 	generateCmd.PersistentFlags().StringVarP(&opts.license, "license", "l", "", "name of license for the project. It will be passed to cobra-cli")
 	generateCmd.PersistentFlags().StringVarP(&opts.author, "author", "a", "", "author name for copyright attribution. It will be passed to cobra-cli")
 	generateCmd.PersistentFlags().StringVarP(&opts.cobraConfig, "config", "c", "$HOME/.cobra.yaml", "cobra-cli config file")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// generateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

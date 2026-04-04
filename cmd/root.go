@@ -28,20 +28,17 @@ var log = logrus.New()
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "argo-openapi",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Argo-OpenAPI creates Argo Events Custom Sensors from OpenAPI specification",
+	Long: `Examples:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+# Create a Sensor for sending messages to Telegram
+argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/refs/heads/main/openapi.json -t ./examples/telegram generate client
+
+# Validate an OpenAPI specification and show endpoint list
+argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/refs/heads/main/openapi.json validate
+`,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -49,55 +46,20 @@ func Execute() {
 	}
 }
 
-func isURL(s string) bool {
-	u, err := url.ParseRequestURI(s)
-	if err != nil {
-		return false
-	}
-
-	return u.Scheme != "" && u.Host != ""
-}
-
-func load(src string) *openapi3.T {
-	var doc *openapi3.T
-	var err error
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	if isURL(src) {
-		url, _ := url.ParseRequestURI(src)
-		doc, err = loader.LoadFromURI(url)
-	} else {
-		doc, err = loader.LoadFromFile(src)
-	}
-	if err != nil {
-		log.Fatalf("load spec: %v - %s", err, src)
-	}
-	if doc.Paths == nil {
-		log.Fatal("No paths are inside the file. Nothing to do")
-	}
-	return doc
-}
-
+// Common argo-openapi options 
 type options struct {
+	// From cmd/root.go
 	src         string
 	target      string
+	// From cmd/generate.go
+	license     string
 	author      string
 	cobraConfig string
-	license     string
-	rootDoc     *openapi3.T
 }
 
 var opts options
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.argo-openapi.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.PersistentFlags().StringVarP(&opts.src, "src", "s", "./openapi.yaml", "Path to openapi protocol. It can be an URL or a path")
 	rootCmd.MarkFlagRequired("src")
 	rootCmd.PersistentFlags().StringVarP(&opts.target, "target", "t", "", "Path to a result sensor. It is required if src is an URL")

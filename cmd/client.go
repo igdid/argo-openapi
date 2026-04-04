@@ -33,36 +33,12 @@ var clientCmd = &cobra.Command{
 
 func generateSensor(cmd *cobra.Command, args []string) {
 	generateSensorProject(filepath.Dir(opts.target))
-	createOpenAPIFiles("sensor.gen.go")
+	project.createOpenAPIFiles("sensor.gen.go")
 	generateProtobuf(opts.target)
 }
 
 func init() {
 	generateCmd.AddCommand(clientCmd)
-}
-
-// Create OpenAPI protocol files
-func createOpenAPIFiles(fn string) {
-	opts.rootDoc = load(opts.src)
-	cfg := codegen.Configuration{
-		PackageName: "proto",
-		Generate: codegen.GenerateOptions{
-			Models: true,
-			Client: true,
-			//GorillaServer:  true,
-			Strict: true,
-		},
-		OutputOptions: codegen.OutputOptions{
-			SkipPrune: true,
-		},
-	}
-	code, err := codegen.Generate(opts.rootDoc, cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(opts.target, fn), []byte(code), 0644); err != nil {
-		log.Fatal(err)
-	}
 }
 
 // Create Protobuf protocol files
