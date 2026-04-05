@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build \
       -trimpath \
       -ldflags="-s -w" \
-      -o /out/{{ .AppName }} ./cmd
+      -o /out/{{ .AppName }} .
 
 FROM scratch
 

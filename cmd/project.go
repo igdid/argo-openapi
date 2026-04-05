@@ -133,6 +133,7 @@ func (p *Project) generateSensorProject() {
 	}
 	p.renderFile("main.go.tpl")
 	p.renderFile("Dockerfile")
+	p.renderFile(".dockerignore.tpl")
 	p.renderFile("cmd/root.go")
 	p.renderFile("cmd/sender.go")
 }
