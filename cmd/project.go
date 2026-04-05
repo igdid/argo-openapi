@@ -10,18 +10,19 @@ import (
 	"github.com/spf13/cobra"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
 )
 
 type Project struct {
-	PkgName   string
-	Copyright string
-	Legal     License
-	AppName   string
-	rootDir   string
-	rootDoc   *openapi3.T
+	PkgName     string
+	Copyright   string
+	Legal       License
+	AppName     string
+	rootDir     string
+	rootDoc     *openapi3.T
 	protoTarget string
 }
 
@@ -156,5 +157,31 @@ func (p *Project) generateSensorProject() {
 	err = rootTemplate.Execute(rootCmdFile, p)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+// Create Protobuf protocol files
+func (p Project) generateProtobuf() {
+	triggerFn := "/tmp/trigger.proto"
+	err := utils.UnpackFile("templates/trigger.proto", triggerFn)
+	if err != nil {
+		log.Fatal(err, triggerFn)
+	}
+	defer os.Remove(triggerFn)
+	cmd := exec.Command(
+		"protoc",
+		"-I/tmp",
+		"--go_out="+p.protoTarget,
+		"--go-grpc_out="+p.protoTarget,
+		"--go_opt=paths=source_relative",
+		"--go-grpc_opt=paths=source_relative",
+		"--go_opt=Mtrigger.proto="+p.protoTarget,
+		"--go-grpc_opt=Mtrigger.proto="+p.protoTarget,
+		"/tmp/trigger.proto",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("protoc failed: %v", err)
 	}
 }

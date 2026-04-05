@@ -19,6 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 )
 
 var log = logrus.New()
@@ -35,7 +36,7 @@ argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/
 # Validate an OpenAPI specification and show endpoint list
 argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/refs/heads/main/openapi.json validate
 `,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if opts.target == "" {
 			if isURL(opts.src) {
 				log.Fatal("A target must be specified for a remote source")
@@ -43,8 +44,8 @@ argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/
 				opts.target = filepath.Dir(opts.src)
 			}
 		}
-        	return nil
-    	},
+		// after this function opts.target can not be empty
+	},
 }
 
 func Execute() {
