@@ -145,20 +145,6 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create go.mod file
-	gomodFile, err := os.Create(fmt.Sprintf("%s/go.mod", p.rootDir))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer gomodFile.Close()
-
-	// Render go.mod template
-	gomodTpl, _ := utils.Templates.ReadFile("templates/go.mod.tpl")
-	gomodTemplate := template.Must(template.New("gomod").Parse(string(gomodTpl)))
-	err = gomodTemplate.Execute(gomodFile, p)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// Create root file
 	rootCmdFile, err := os.Create(fmt.Sprintf("%s/root.go", cmdDir))
@@ -174,11 +160,28 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
-	// Run `go mod tidy`
+func (p Project) tidy() {
+	// Create go.mod file
+	gomodFile, err := os.Create(fmt.Sprintf("%s/go.mod", p.rootDir))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer gomodFile.Close()
+
+	// Render go.mod template
+	gomodTpl, _ := utils.Templates.ReadFile("templates/go.mod.tpl")
+	gomodTemplate := template.Must(template.New("gomod").Parse(string(gomodTpl)))
+	err = gomodTemplate.Execute(gomodFile, p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("Running `go mod tidy`")
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = p.rootDir
-	cmd.Stdout = os.Stdout
+	//cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("`go mod tidy` failed: %v", err)

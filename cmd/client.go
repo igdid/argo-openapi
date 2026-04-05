@@ -59,6 +59,7 @@ func generateSensor(cmd *cobra.Command, args []string) {
 	project.generateSensorProject()
 	project.createOpenAPIFiles("sensor.gen.go")
 	project.generateProtobuf()
+	project.tidy()
 	log.Infof("%s code generated successfully in %s", project.AppName, project.rootDir)
 }
 
