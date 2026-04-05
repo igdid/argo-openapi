@@ -5,22 +5,33 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	//"{{ .PkgName }}/proto"
 	"os"
 )
+
+var log = logrus.New()
 
 var rootCmd = &cobra.Command{
 	Use:   "{{ .AppName }}",
 	Short: "Argo events openapi generated sensor",
 	Long:  `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification`,
+	Run:   runSensor,
 }
 
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
+	}
+}
+
+func runSensor(cmd *cobra.Command, args []string) {
+	log.Infof("Starting server on :%d, log level: %s, metrics: %v", opts.port, opts.logLevel, opts.metrics)
+	if opts.metrics {
+		log.Infof("Listenings metrics on :%d", opts.metricsPort)
 	}
 }
 
@@ -58,6 +69,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		log.Infof("Using config file: %s", viper.ConfigFileUsed())
 	}
 }
