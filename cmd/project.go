@@ -21,6 +21,7 @@ type Project struct {
 	Copyright   string
 	Legal       License
 	AppName     string
+	GoVersion   string
 	rootDir     string
 	rootDoc     *openapi3.T
 	protoTarget string
@@ -137,21 +138,36 @@ func (p *Project) generateSensorProject() {
 	}
 	defer mainFile.Close()
 
-	// Render main template
+	// Render main.go template
 	mainTpl, _ := utils.Templates.ReadFile("templates/main.go.tpl")
 	mainTemplate := template.Must(template.New("main").Parse(string(mainTpl)))
 	err = mainTemplate.Execute(mainFile, p)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create main file
+	// Create go.mod file
+	gomodFile, err := os.Create(fmt.Sprintf("%s/go.mod", p.rootDir))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer gomodFile.Close()
+
+	// Render go.mod template
+	gomodTpl, _ := utils.Templates.ReadFile("templates/go.mod.tpl")
+	gomodTemplate := template.Must(template.New("gomod").Parse(string(gomodTpl)))
+	err = gomodTemplate.Execute(gomodFile, p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create root file
 	rootCmdFile, err := os.Create(fmt.Sprintf("%s/root.go", cmdDir))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rootCmdFile.Close()
 
-	// Render main template
+	// Render root template
 	rootTpl, _ := utils.Templates.ReadFile("templates/cmd/root.go")
 	rootTemplate := template.Must(template.New("root").Parse(string(rootTpl)))
 	err = rootTemplate.Execute(rootCmdFile, p)

@@ -40,6 +40,7 @@ var clientCmd = &cobra.Command{
 			Copyright: copyrightLine(),
 			Legal:     getLicense(),
 			PkgName:   goPackage,
+			GoVersion: utils.CurrentGoVersion(),
 			rootDir:   rootDir,
 		}
 		project.protoTarget = filepath.Join(project.rootDir, "proto")
