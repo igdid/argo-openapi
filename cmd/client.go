@@ -35,6 +35,7 @@ var clientCmd = &cobra.Command{
 func generateSensor(cmd *cobra.Command, args []string) {
 	goPackage, err := utils.GetGoPackage(opts.target)
 	if err != nil {
+		// if not a git repo
 		log.Fatal(err)
 	}
 	// Fill the project structure
@@ -44,6 +45,10 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		Legal:     getLicense(),
 		PkgName:   goPackage,
 	}
+	
+	project.rootDir = filepath.Join(project.protoTarget, "sensor")
+	project.protoTarget = filepath.Join(project.rootDir, "proto")
+
 	// Start code generation
 	log.WithFields(logrus.Fields{
 		"Go Package": project.PkgName,
@@ -51,7 +56,7 @@ func generateSensor(cmd *cobra.Command, args []string) {
 		"Copyright":  project.Copyright,
 		"License":    project.Legal.Name,
 	}).Info("Starting code generation")
-	project.generateSensorProject(filepath.Dir(opts.target))
+	project.generateSensorProject()
 	project.createOpenAPIFiles("sensor.gen.go")
 	project.generateProtobuf(opts.target)
 	log.Infof("%s code generated successfully in %s", project.AppName, opts.target)

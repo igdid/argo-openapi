@@ -14,19 +14,15 @@ func FindGitRoot(start string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	for {
 		gitPath := filepath.Join(dir, ".git")
-
 		if _, err := os.Stat(gitPath); err == nil {
 			return dir, nil
 		}
-
 		parent := filepath.Dir(dir)
 		if parent == dir {
 			return "", errors.New("git repository not found")
 		}
-
 		dir = parent
 	}
 }

@@ -35,6 +35,16 @@ argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/
 # Validate an OpenAPI specification and show endpoint list
 argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/refs/heads/main/openapi.json validate
 `,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if opts.target == "" {
+			if isURL(opts.src) {
+				log.Fatal("A target must be specified for a remote source")
+			} else {
+				opts.target = filepath.Dir(opts.src)
+			}
+		}
+        	return nil
+    	},
 }
 
 func Execute() {

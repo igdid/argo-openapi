@@ -16,13 +16,13 @@ import (
 )
 
 type Project struct {
-	// v2
 	PkgName   string
 	Copyright string
 	Legal     License
 	AppName   string
 	rootDir   string
 	rootDoc   *openapi3.T
+	protoTarget string
 }
 
 var project Project
@@ -46,7 +46,7 @@ func (p *Project) createOpenAPIFiles(fn string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(opts.target, fn), []byte(code), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(p.protoTarget, fn), []byte(code), 0644); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -118,16 +118,9 @@ func load(src string) *openapi3.T {
 }
 
 // Create common files
-func (p *Project) generateSensorProject(targetDir string) {
-	if !isURL(opts.src) {
-		opts.target = filepath.Dir(opts.src)
-	} else if opts.target == "" {
-		log.Fatal("A target must be specified")
-	}
-	p.rootDir = filepath.Join(opts.target, "sensor")
+func (p *Project) generateSensorProject() {
 	// Create dir hierarchy
-	opts.target = filepath.Join(p.rootDir, "proto")
-	err := os.MkdirAll(opts.target, 0754)
+	err := os.MkdirAll(p.protoTarget, 0754)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -164,5 +157,4 @@ func (p *Project) generateSensorProject(targetDir string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
