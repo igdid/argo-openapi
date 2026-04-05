@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "{{ .AppName }}",
 	Short: "Argo events openapi generated sensor",
-	Long: `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification`,
+	Long:  `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification`,
 }
 
 func Execute() {
@@ -25,10 +25,10 @@ func Execute() {
 }
 
 type options struct {
-	cfgFile string
-	logLevel string
-	port int
-	metrics bool
+	cfgFile     string
+	logLevel    string
+	port        int
+	metrics     bool
 	metricsPort int
 }
 
@@ -49,7 +49,7 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(opts.cfgFile)
 	} else {
-		viper.AddConfigPath("/etc/.{{ .AppName }}")
+		viper.AddConfigPath("/etc/{{ .AppName }}")
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
 	}

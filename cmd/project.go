@@ -158,7 +158,7 @@ func (p *Project) generateSensorProject(targetDir string) {
 	defer rootCmdFile.Close()
 
 	// Render main template
-	rootTpl, _ := utils.Templates.ReadFile("templates/cmd/root.go.tpl")
+	rootTpl, _ := utils.Templates.ReadFile("templates/cmd/root.go")
 	rootTemplate := template.Must(template.New("root").Parse(string(rootTpl)))
 	err = rootTemplate.Execute(rootCmdFile, p)
 	if err != nil {
