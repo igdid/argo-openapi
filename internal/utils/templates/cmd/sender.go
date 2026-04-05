@@ -1,0 +1,40 @@
+/*
+{{ .Copyright }}
+{{ if .Legal.Header }}{{ .Legal.Header }}{{ end }}
+*/
+package cmd
+
+import (
+	context "context"
+	proto "{{ .PkgName }}/proto"
+	prototext "google.golang.org/protobuf/encoding/prototext"
+)
+
+type Sender struct {
+	proto.UnimplementedTriggerServer
+}
+
+func (s Sender) FetchResource(ctx context.Context,
+	in *proto.FetchResourceRequest) (*proto.FetchResourceResponse, error) {
+	log.Info("FetchResource called with %s", prototext.Format(in))
+	return &proto.FetchResourceResponse{
+		Resource: []byte("success fetch"),
+	}, nil
+}
+
+func (s Sender) Execute(ctx context.Context,
+	in *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
+	log.Info("Execute called with %s", prototext.Format(in))
+	return &proto.ExecuteResponse{
+		Response: []byte("success execute"),
+	}, nil
+}
+
+func (s Sender) ApplyPolicy(ctx context.Context,
+	in *proto.ApplyPolicyRequest) (*proto.ApplyPolicyResponse, error) {
+	log.Info("ApplyPolicy called with %s", prototext.Format(in))
+	return &proto.ApplyPolicyResponse{
+		Success: true,
+		Message: "success",
+	}, nil
+}

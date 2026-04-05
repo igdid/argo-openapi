@@ -10,6 +10,9 @@ import (
 	"github.com/spf13/viper"
 	"{{ .PkgName }}/proto"
 	"os"
+	"fmt"
+	"net"
+	"google.golang.org/grpc"
 )
 
 var log = logrus.New()
@@ -18,7 +21,7 @@ var rootCmd = &cobra.Command{
 	Use:   "{{ .AppName }}",
 	Short: "Argo events openapi generated sensor",
 	Long:  `{{ .AppName }} gets events from argo events and sends them to a remote server as it said in its openapi specification`,
-	Run:   runSensor,
+	Run:   runSender,
 }
 
 func Execute() {
@@ -28,8 +31,19 @@ func Execute() {
 	}
 }
 
-func runSensor(cmd *cobra.Command, args []string) {
+func runSender(cmd *cobra.Command, args []string) {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	srv := grpc.NewServer()
+
+	sender := Sender{}
+	proto.RegisterTriggerServer(srv, &sender)
 	log.Infof("Starting server on :%d, log level: %s, metrics: %v", opts.port, opts.logLevel, opts.metrics)
+	if err := srv.Serve(listener); err != nil {
+		log.Fatal(err)
+	}
 	if opts.metrics {
 		log.Infof("Listenings metrics on :%d", opts.metricsPort)
 	}

@@ -160,6 +160,21 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Create sender file
+	senderFile, err := os.Create(fmt.Sprintf("%s/sender.go", cmdDir))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer senderFile.Close()
+
+	// Render sender template
+	senderTpl, _ := utils.Templates.ReadFile("templates/cmd/sender.go")
+	senderTemplate := template.Must(template.New("sender").Parse(string(senderTpl)))
+	err = senderTemplate.Execute(senderFile, p)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (p Project) tidy() {
