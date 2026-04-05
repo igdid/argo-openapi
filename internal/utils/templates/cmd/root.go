@@ -32,7 +32,7 @@ func Execute() {
 }
 
 func runSender(cmd *cobra.Command, args []string) {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.port))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", opts.port))
 	if err != nil {
 		log.Fatal(err)
 	}
