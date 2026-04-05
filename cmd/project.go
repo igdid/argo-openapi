@@ -132,6 +132,7 @@ func (p *Project) generateSensorProject() {
 		log.Fatal(err)
 	}
 	p.renderFile("main.go.tpl")
+	p.renderFile("Dockerfile")
 	p.renderFile("cmd/root.go")
 	p.renderFile("cmd/sender.go")
 }
