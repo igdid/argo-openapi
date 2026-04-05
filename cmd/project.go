@@ -131,68 +131,31 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create main file
-	mainFile, err := os.Create(fmt.Sprintf("%s/main.go", p.rootDir))
+	p.renderFile("main.go.tpl")
+	p.renderFile("cmd/root.go")
+	p.renderFile("cmd/sender.go")
+}
+
+func (p Project) renderFile(name string) {
+	// Create file
+	fn := strings.TrimSuffix(name, ".tpl")
+	f, err := os.Create(fmt.Sprintf("%s/%s", p.rootDir, fn))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer mainFile.Close()
+	defer f.Close()
 
-	// Render main.go template
-	mainTpl, _ := utils.Templates.ReadFile("templates/main.go.tpl")
-	mainTemplate := template.Must(template.New("main").Parse(string(mainTpl)))
-	err = mainTemplate.Execute(mainFile, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create root file
-	rootCmdFile, err := os.Create(fmt.Sprintf("%s/root.go", cmdDir))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rootCmdFile.Close()
-
-	// Render root template
-	rootTpl, _ := utils.Templates.ReadFile("templates/cmd/root.go")
-	rootTemplate := template.Must(template.New("root").Parse(string(rootTpl)))
-	err = rootTemplate.Execute(rootCmdFile, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create sender file
-	senderFile, err := os.Create(fmt.Sprintf("%s/sender.go", cmdDir))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer senderFile.Close()
-
-	// Render sender template
-	senderTpl, _ := utils.Templates.ReadFile("templates/cmd/sender.go")
-	senderTemplate := template.Must(template.New("sender").Parse(string(senderTpl)))
-	err = senderTemplate.Execute(senderFile, p)
+	// Render template
+	tpl, _ := utils.Templates.ReadFile(fmt.Sprintf("templates/%s", name))
+	ftpl := template.Must(template.New(name).Parse(string(tpl)))
+	err = ftpl.Execute(f, p)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (p Project) tidy() {
-	// Create go.mod file
-	gomodFile, err := os.Create(fmt.Sprintf("%s/go.mod", p.rootDir))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer gomodFile.Close()
-
-	// Render go.mod template
-	gomodTpl, _ := utils.Templates.ReadFile("templates/go.mod.tpl")
-	gomodTemplate := template.Must(template.New("gomod").Parse(string(gomodTpl)))
-	err = gomodTemplate.Execute(gomodFile, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	p.renderFile("go.mod.tpl")
 	log.Info("Running `go mod tidy`")
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = p.rootDir
