@@ -41,6 +41,7 @@ var clientCmd = &cobra.Command{
 			Legal:     getLicense(),
 			PkgName:   goPackage,
 			GoVersion: utils.CurrentGoVersion(),
+			GoArch:    opts.arch,
 			rootDir:   rootDir,
 		}
 		project.protoTarget = filepath.Join(project.rootDir, "proto")

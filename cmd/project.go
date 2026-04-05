@@ -22,6 +22,7 @@ type Project struct {
 	Legal       License
 	AppName     string
 	GoVersion   string
+	GoArch      string
 	rootDir     string
 	rootDoc     *openapi3.T
 	protoTarget string

@@ -63,6 +63,7 @@ type options struct {
 	// From cmd/generate.go
 	license     string
 	author      string
+	arch        string
 	cobraConfig string
 }
 
