@@ -77,8 +77,8 @@ func (p Project) generateProtobuf(targetDir string) {
 		"--go-grpc_out="+targetDir,
 		"--go_opt=paths=source_relative",
 		"--go-grpc_opt=paths=source_relative",
-		"--go_opt=Mtrigger.proto="+p.PkgName,
-		"--go-grpc_opt=Mtrigger.proto="+p.PkgName,
+		"--go_opt=Mtrigger.proto="+opts.target,
+		"--go-grpc_opt=Mtrigger.proto="+opts.target,
 		"/tmp/trigger.proto",
 	)
 	cmd.Stdout = os.Stdout

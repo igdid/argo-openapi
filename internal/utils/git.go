@@ -81,6 +81,8 @@ func GetGoPackage(protocol string) (string, error) {
 		return "", err
 	}
 	remoteAddr = SSHtoHTTPS(remoteAddr)
+	remoteAddr = strings.TrimPrefix(remoteAddr, "https://")
 	goPackage := fmt.Sprintf("%s/%s", remoteAddr, strings.TrimPrefix(protocol, gitRoot))
+	goPackage = strings.TrimRight(goPackage, "/")
 	return goPackage, nil
 }
