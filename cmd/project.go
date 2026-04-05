@@ -174,6 +174,15 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Run `go mod tidy`
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = p.rootDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("`go mod tidy` failed: %v", err)
+	}
 }
 
 // Create Protobuf protocol files
