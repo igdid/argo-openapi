@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: petstore-events
+  namespace: argo-events
+spec:
+  eventBusName: default
+  nats:
+    petstore-event:
+      url: nats://eventbus-default-stan-svc:4222  # обычно STAN деплой внутри кластера
+      jsonBody: true
+      clusterID: "eventbus-default"
+      subject: petstore.orders
+      auth:
+        token:
+          name: nats-token
+          key: token
