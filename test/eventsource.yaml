@@ -7,7 +7,7 @@ spec:
   eventBusName: default
   nats:
     petstore-event:
-      url: nats://eventbus-default-stan-svc:4222  # обычно STAN деплой внутри кластера
+      url: nats://eventbus-default-stan-svc:4222
       jsonBody: true
       clusterID: "eventbus-default"
       subject: petstore.orders

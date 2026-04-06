@@ -19,7 +19,7 @@ type Sender struct {
 
 func (s Sender) FetchResource(ctx context.Context,
 	in *proto.FetchResourceRequest) (*proto.FetchResourceResponse, error) {
-	log.Info("FetchResource called with %s", prototext.Format(in))
+	log.Infof("FetchResource called with %s", prototext.Format(in))
 	return &proto.FetchResourceResponse{
 		Resource: []byte("success fetch"),
 	}, nil
@@ -27,7 +27,7 @@ func (s Sender) FetchResource(ctx context.Context,
 
 func (s Sender) Execute(ctx context.Context,
 	in *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
-	log.Info("Execute called with %s", prototext.Format(in))
+	log.Infof("Execute called with %s", prototext.Format(in))
 	return &proto.ExecuteResponse{
 		Response: []byte("success execute"),
 	}, nil
@@ -35,7 +35,7 @@ func (s Sender) Execute(ctx context.Context,
 
 func (s Sender) ApplyPolicy(ctx context.Context,
 	in *proto.ApplyPolicyRequest) (*proto.ApplyPolicyResponse, error) {
-	log.Info("ApplyPolicy called with %s", prototext.Format(in))
+	log.Infof("ApplyPolicy called with %s", prototext.Format(in))
 	return &proto.ApplyPolicyResponse{
 		Success: true,
 		Message: "success",
