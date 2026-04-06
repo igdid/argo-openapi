@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argo-workflows
+  namespace: argo
+spec:
+  parentRefs:
+    - name: argo-gateway
+  hostnames:
+    - argo.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: argo-server
+          port: 2746
