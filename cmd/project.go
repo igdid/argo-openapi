@@ -72,6 +72,20 @@ func showParams(method, name string, operation *openapi3.Operation) {
 	}
 }
 
+func (p *Project) createLicenseFile() error {
+        data := map[string]interface{}{
+                "copyright": copyrightLine(),
+        }
+        licenseFile, err := os.Create(fmt.Sprintf("%s/LICENSE", p.rootDir))
+        if err != nil {
+                return err
+        }
+        defer licenseFile.Close()
+
+        licenseTemplate := template.Must(template.New("license").Parse(p.Legal.Text))
+        return licenseTemplate.Execute(licenseFile, data)
+}
+
 func (p *Project) validateOpenAPI(cmd *cobra.Command, args []string) {
 	p.rootDoc = load(opts.src)
 	ctx := context.Background()
