@@ -77,15 +77,7 @@ func showParams(method, name string, operation *openapi3.Operation) {
 	l := log.WithFields(logrus.Fields{
 		"operationID": operation.OperationID,
 	})
-	if len(operation.Parameters) == 0 {
-		l.Info(strings.ToUpper(method), " ", name)
-	}
-	for _, p := range operation.Parameters {
-		l.WithFields(logrus.Fields{
-			"param": p.Value.Name,
-			"in":    p.Value.In,
-		}).Info(strings.ToUpper(method), " ", name)
-	}
+	l.Info(strings.ToUpper(method), " ", name)
 }
 
 func (p *Project) createLicenseFile() error {
@@ -109,15 +101,60 @@ func (p *Project) validateOpenAPI(cmd *cobra.Command, args []string) {
 	if err := p.rootDoc.Validate(ctx); err != nil {
 		log.Fatalf("invalid spec: %v", err)
 	}
-	log.Info("OpenAPI spec is valid. The following methods available:")
-	for name, path := range p.rootDoc.Paths.Map() {
-		showParams("get", name, path.Get)
-		showParams("post", name, path.Post)
-		showParams("put", name, path.Put)
-		showParams("delete", name, path.Delete)
-		showParams("options", name, path.Options)
-		showParams("patch", name, path.Patch)
-		showParams("trace", name, path.Trace)
+	log.Info("OpenAPI spec is valid")
+}
+
+func FindOperationByID(doc *openapi3.T, operationID string) (*openapi3.Operation, string, string) {
+	for path, pathItem := range doc.Paths.Map() {
+		for method, op := range pathItem.Operations() {
+			if op != nil && op.OperationID == operationID {
+				return op, method, path
+			}
+		}
+	}
+	return nil, "", ""
+}
+
+func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
+	p.rootDoc = load(opts.src)
+	if len(args) == 0 {
+		for name, path := range p.rootDoc.Paths.Map() {
+			showParams("get", name, path.Get)
+			showParams("post", name, path.Post)
+			showParams("put", name, path.Put)
+			showParams("delete", name, path.Delete)
+			showParams("options", name, path.Options)
+			showParams("patch", name, path.Patch)
+			showParams("trace", name, path.Trace)
+		}
+	} else {
+		opId := args[0]
+		op, method, path := FindOperationByID(p.rootDoc, opId)
+		if op == nil {
+			log.Fatalf("Operation %s not found", opId)
+		}
+		log.Infof("%s %s", method, path)
+		if op.Summary != "" {
+			log.Infof("Summary: %s", op.Summary)
+		}
+		if op.Description != "" {
+			log.Infof("Description: %s", op.Description)
+		}
+		log.Infof("Deprecated: %v", op.Deprecated)
+		if len(op.Parameters) > 0 {
+			log.Info("Parameters:")
+		}
+		for _, param := range op.Parameters {
+			if param.Ref != "" {
+				log.Infof("- %s", param.Ref)
+			} else {
+				required := ""
+				if param.Value.Required {
+					required = "(required)"
+				}
+				log.Infof("- %s %s", param.Value.Name, required)
+			}
+		}
 	}
 }
 

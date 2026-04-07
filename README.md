@@ -22,3 +22,4 @@ go run main.go generate client -f examples/petstore/store.yaml
 ## Usage
 1. **Create a Git repo anywhere.** Argo-OpenAPI uses **origin** from `git remote -v` for getting go_package address. So this tool must be run in a Git repo.
 2. 
+
