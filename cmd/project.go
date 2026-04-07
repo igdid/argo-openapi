@@ -23,6 +23,7 @@ import (
 	"github.com/igdid/argo-openapi/internal/utils"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
 	"github.com/sirupsen/logrus"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"net/url"
 	"os"
@@ -45,6 +46,21 @@ type Project struct {
 }
 
 var project Project
+
+func (p *Project) createLicenseFile() error {
+	data := map[string]interface{}{
+		"copyright": copyrightLine(),
+	}
+	licenseFile, err := os.Create(fmt.Sprintf("%s/LICENSE", p.rootDir))
+	if err != nil {
+		return err
+	}
+	defer licenseFile.Close()
+
+	licenseTemplate := template.Must(template.New("license").Parse(p.Legal.Text))
+	return licenseTemplate.Execute(licenseFile, data)
+}
+
 
 // Create OpenAPI protocol files
 func (p *Project) createOpenAPIFiles(fn string) {
@@ -78,20 +94,6 @@ func showParams(method, name string, operation *openapi3.Operation) {
 		"operationID": operation.OperationID,
 	})
 	l.Info(strings.ToUpper(method), " ", name)
-}
-
-func (p *Project) createLicenseFile() error {
-	data := map[string]interface{}{
-		"copyright": copyrightLine(),
-	}
-	licenseFile, err := os.Create(fmt.Sprintf("%s/LICENSE", p.rootDir))
-	if err != nil {
-		return err
-	}
-	defer licenseFile.Close()
-
-	licenseTemplate := template.Must(template.New("license").Parse(p.Legal.Text))
-	return licenseTemplate.Execute(licenseFile, data)
 }
 
 func (p *Project) validateOpenAPI(cmd *cobra.Command, args []string) {
@@ -133,16 +135,24 @@ func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
 		if op == nil {
 			log.Fatalf("Operation %s not found", opId)
 		}
-		log.Infof("%s %s", method, path)
+		color.New(color.FgGreen).Print(method)
+		fmt.Print(" ")
+		color.Magenta(path)
 		if op.Summary != "" {
-			log.Infof("Summary: %s", op.Summary)
+			color.New(color.FgYellow).Print("Summary: ")
+			fmt.Print(op.Summary)
+			fmt.Println()
 		}
 		if op.Description != "" {
-			log.Infof("Description: %s", op.Description)
+			color.New(color.FgYellow).Print("Description: ")
+			fmt.Print(op.Description)
+			fmt.Println()
 		}
-		log.Infof("Deprecated: %v", op.Deprecated)
+		color.New(color.FgYellow).Print("Deprecated: ")
+		fmt.Printf("%v", op.Deprecated)
+		fmt.Println()
 		if len(op.Parameters) > 0 {
-			log.Info("Parameters:")
+			color.New(color.FgYellow).Println("Parameters: ")
 		}
 		for _, param := range op.Parameters {
 			if param.Ref != "" {
@@ -152,7 +162,7 @@ func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
 				if param.Value.Required {
 					required = "(required)"
 				}
-				log.Infof("- %s %s", param.Value.Name, required)
+				fmt.Printf("- %s %s\n", param.Value.Name, required)
 			}
 		}
 	}
