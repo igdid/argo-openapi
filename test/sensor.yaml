@@ -3,7 +3,9 @@ kind: Sensor
 metadata:
   name: petstore-sensor
 spec:
-  imagePullPolicy: IfNotPresent
+  template:
+    container:
+      imagePullPolicy: IfNotPresent
   dependencies:
     - name: test
       eventSourceName: petstore-events
@@ -25,13 +27,14 @@ spec:
           parameters:
             - src:
                 dependencyName: test
-                dataTemplate: |
-                  operationId: {{ .Input.body.operationId }}
-                  parameters:
-                    {{ range .Input.body.parameters }}
-                    {{ . }}
-                    {{ end }}
-              dest: payload
+                dataKey: body.operationId
+              dest: payload.operationId
+
+            - src:
+                dependencyName: test
+                dataKey: body.parameters
+                useRawData: true
+              dest: payload.parameters
       # These parameters are applied on entire template body.
       # So that you can parameterize anything under `custom` key such as `serverURL`, `spec` etc.
       #parameters:
