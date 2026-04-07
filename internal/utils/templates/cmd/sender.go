@@ -9,6 +9,8 @@ package cmd
 
 import (
 	context "context"
+	json "encoding/json"
+	yaml "go.yaml.in/yaml/v3"
 	proto "{{ .PkgName }}/proto"
 	prototext "google.golang.org/protobuf/encoding/prototext"
 )
@@ -20,15 +22,28 @@ type Sender struct {
 func (s Sender) FetchResource(ctx context.Context,
 	in *proto.FetchResourceRequest) (*proto.FetchResourceResponse, error) {
 	log.Infof("FetchResource called with %s", prototext.Format(in))
+	var input interface{}
+	err := yaml.Unmarshal(in.Resource, &input)
+    	if err != nil {
+        	return nil, err
+    	}
+	raw, err := json.Marshal(input)
+    	if err != nil {
+        	return nil, err
+    	}
 	return &proto.FetchResourceResponse{
-		Resource: []byte("success fetch"),
+		// For now it doesn't fetch anything
+		Resource: raw,
 	}, nil
 }
 
 func (s Sender) Execute(ctx context.Context,
 	in *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
 	log.Infof("Execute called with %s", prototext.Format(in))
+	log.Infof("Resource: %s", in.Resource)
+	log.Infof("Payload: %s", in.Payload)
 	return &proto.ExecuteResponse{
+		// For now it doesn't execute anything
 		Response: []byte("success execute"),
 	}, nil
 }
