@@ -83,6 +83,7 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
+	viper.SetEnvPrefix("{{ .AppName | upper }}")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Warnf("No config file found: %v", err)
