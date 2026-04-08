@@ -9,22 +9,19 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"time"
 )
 
 var cfg Config
 
 type Config struct {
-	EventBus EventBusConfig `yaml:"eventBus"`
-	Client ClientConfig `yaml:"client"`
-	Metrics MetricsConfig `yaml:"metrics"`
+	EventBus EventBusConfig `yaml:"eventBus" mapstructure:"eventBus"`
+	Client ClientConfig `yaml:"client" mapstructure:"client"`
+	Metrics MetricsConfig `yaml:"metrics" mapstructure:"metrics"`
 }
 
 type MetricsConfig struct {
-	Enabled bool `yaml:"enabled"`
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
 }
 
 func (m MetricsConfig) String() string {
@@ -36,9 +33,9 @@ func (m MetricsConfig) String() string {
 }
 
 type ClientConfig struct {
-	Timeout time.Duration `yaml:"timeout"`
-	RetryCount int `yaml:"retryCount"`
-	Backoff BackoffParams `yaml:"backoff"`
+	Timeout time.Duration `yaml:"timeout" mapstructure:"timeout"`
+	RetryCount int `yaml:"retryCount" mapstructure:"retryCount"`
+	Backoff BackoffParams `yaml:"backoff" mapstructure:"backoff"`
 }
 
 func (c ClientConfig) String() string {
@@ -51,14 +48,14 @@ func (c ClientConfig) String() string {
 }
 
 type BackoffParams struct {
-	Type string `yaml:"type"`
-	Delay time.Duration `yaml:"delay"`
-	Multiplier *uint `yaml:"multiplier"`
+	Type string `yaml:"type" mapstructure:"type"`
+	Delay time.Duration `yaml:"delay" mapstructure:"delay"`
+	Multiplier *uint `yaml:"multiplier" mapstructure:"multiplier"`
 }
 
 type EventBusConfig struct {
-	Type string `yaml:"type"`
-	Nats NatsConfig `yaml:"nats"`
+	Type string `yaml:"type" mapstructure:"type"`
+	Nats NatsConfig `yaml:"nats" mapstructure:"nats"`
 }
 
 func (e EventBusConfig) String() string {
@@ -66,24 +63,24 @@ func (e EventBusConfig) String() string {
 }
 
 type NatsConfig struct {
-	URL string `yaml:"url"`
-	Secure bool `yaml:"secure"`
-	TLS TLSConfig `yaml:"tls"`
-	Topics Topics `yaml:"topics"`
+	URL string `yaml:"url" mapstructure:"url"`
+	Secure bool `yaml:"secure" mapstructure:"secure"`
+	TLS TLSConfig `yaml:"tls" mapstructure:"tls"`
+	Topics Topics `yaml:"topics" mapstructure:"topics"`
 }
 
 type TLSConfig struct {
-	CAPath string `yaml:"ca"`
-	KeyPath string `yaml:"key"`
-	CertPath string `yaml:"crt"`
-	Verify string `yaml:"verify"`
+	CAPath string `yaml:"ca" mapstructure:"ca"`
+	KeyPath string `yaml:"key" mapstructure:"key"`
+	CertPath string `yaml:"crt" mapstructure:"crt"`
+	Verify string `yaml:"verify" mapstructure:"verify"`
 }
 
 type Topics struct {
-	DLQ TopicConfig `yaml:"dlq"`
-	ResponseTopic TopicConfig `yaml:"resp"`
+	DLQ TopicConfig `yaml:"dlq" mapstructure:"dlq"`
+	ResponseTopic TopicConfig `yaml:"resp" mapstructure:"resp"`
 }
 
 type TopicConfig struct {
-	Name string `yaml:"name"`
+	Name string `yaml:"name" mapstructure:"name"`
 }

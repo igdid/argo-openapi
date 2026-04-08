@@ -64,7 +64,7 @@ var opts options
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVarP(&opts.cfgFile, "config", "c", "/etc/{{ .AppName }}/config.yaml", "config file path (default is /etc/{{ .AppName }}/config.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&opts.cfgFile, "config", "c", "/etc/{{ .AppName }}/config.yaml", "config file path")
 	rootCmd.PersistentFlags().StringVarP(&opts.logLevel, "log-level", "l", "info", "Log level for the server")
 	rootCmd.PersistentFlags().IntVarP(&opts.port, "port", "p", 8081, "GRPC port for incomming events")
 	rootCmd.PersistentFlags().BoolVar(&opts.metrics, "enable-metrics", false, "Enable metrics")
@@ -84,11 +84,16 @@ func initConfig() {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.Unmarshal(&cfg); err == nil {
+	if err := viper.ReadInConfig(); err != nil {
+		log.Warnf("No config file found: %v", err)
+	} else {
 		log.Infof("Using config file: %s", viper.ConfigFileUsed())
-		log.Info(cfg.EventBus)
-		log.Info(cfg.Client)
-		log.Info(cfg.Metrics)
 	}
+	// If a config file is found, read it in.
+	if err := viper.Unmarshal(&cfg); err != nil {
+		log.Fatalf("Unable to decode into struct: %v", err)
+	}
+	log.Info(cfg.EventBus)
+	log.Info(cfg.Client)
+	log.Info(cfg.Metrics)
 }
