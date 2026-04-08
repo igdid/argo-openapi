@@ -64,7 +64,7 @@ var opts options
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVarP(&opts.cfgFile, "config", "c", "/etc/{{ .AppName }}/config.yaml", "config file path")
+	rootCmd.PersistentFlags().StringVarP(&opts.cfgFile, "config", "c", "", "config file path")
 	rootCmd.PersistentFlags().StringVarP(&opts.logLevel, "log-level", "l", "info", "Log level for the server")
 	rootCmd.PersistentFlags().IntVarP(&opts.port, "port", "p", 8081, "GRPC port for incomming events")
 	rootCmd.PersistentFlags().BoolVar(&opts.metrics, "enable-metrics", false, "Enable metrics")
@@ -78,6 +78,8 @@ func initConfig() {
 		viper.SetConfigFile(opts.cfgFile)
 	} else {
 		viper.AddConfigPath("/etc/{{ .AppName }}")
+		viper.AddConfigPath("$HOME/.{{ .AppName }}")
+		viper.AddConfigPath(".")
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
 	}
