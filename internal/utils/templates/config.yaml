@@ -1,0 +1,24 @@
+eventBus:
+  type: nats
+  nats:
+    url: nats://eventbus-default-stan-svc:4222
+    secure: false
+    tls:
+      ca: /etc/certs/ca.crt
+      key: /etc/certs/tls.key
+      crt: /etc/certs/tls.crt
+      verify: strict
+    topics:
+      dlq:
+        name: dlq.{{ .AppName }}
+      resp:
+        name: resp.{{ .AppName }}
+client:
+  timeout: 5s
+  retryCount: 3
+  backoff:
+    type: exp
+    delay: 1s
+    multiplier: 2
+metrics:
+  enabled: false

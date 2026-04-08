@@ -43,6 +43,8 @@ var clientCmd = &cobra.Command{
 			GoVersion: utils.CurrentGoVersion(),
 			GoArch:    opts.arch,
 			rootDir:   rootDir,
+			// preserve rootDoc saved here on the root step
+			rootDoc: project.rootDoc,
 		}
 		project.protoTarget = filepath.Join(project.rootDir, "proto")
 		log.WithFields(logrus.Fields{

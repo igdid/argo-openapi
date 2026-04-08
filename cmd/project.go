@@ -64,15 +64,14 @@ func (p *Project) createLicenseFile() error {
 }
 
 // Create OpenAPI protocol files
-func (p *Project) createOpenAPIFiles(fn string) {
+func (p Project) createOpenAPIFiles(fn string) {
 	cfg := codegen.Configuration{
 		PackageName: "proto",
 		Generate: codegen.GenerateOptions{
 			Models:     true,
 			Client:     true,
 			ServerURLs: true,
-			//GorillaServer:  true,
-			Strict: true,
+			Strict:     true,
 		},
 		OutputOptions: codegen.OutputOptions{
 			SkipPrune: true,
@@ -97,7 +96,7 @@ func showParams(method, name string, operation *openapi3.Operation) {
 	l.Info(strings.ToUpper(method), " ", name)
 }
 
-func (p *Project) validateOpenAPI(cmd *cobra.Command, args []string) {
+func (p Project) validateOpenAPI(cmd *cobra.Command, args []string) {
 	ctx := context.Background()
 
 	if err := p.rootDoc.Validate(ctx); err != nil {
@@ -205,7 +204,7 @@ func (p *Project) load(src string) {
 }
 
 // Create common files
-func (p *Project) generateSensorProject() {
+func (p Project) generateSensorProject() {
 	// Create dir hierarchy
 	err := os.MkdirAll(p.protoTarget, 0754)
 	if err != nil {
@@ -216,19 +215,25 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	p.load(opts.src)
-	p.renderFile("main.go.tpl")
-	p.renderFile("Dockerfile")
-	p.renderFile(".dockerignore.tpl")
-	p.renderFile("cmd/root.go")
-	p.renderFile("cmd/sender.go")
-	p.renderFile("cmd/operations.go")
+	p.renderFile("main.go.tpl", true)
+	p.renderFile("Dockerfile", true)
+	p.renderFile(".dockerignore.tpl", true)
+	p.renderFile("cmd/root.go", true)
+	p.renderFile("cmd/sender.go", true)
+	p.renderFile("cmd/operations.go", true)
+	p.renderFile("cmd/config.go", true)
+	// Default config shouldn't be rewritten after manual changes
+	p.renderFile("config.yaml", false)
 }
 
-func (p Project) renderFile(name string) {
+func (p Project) renderFile(name string, rewrite bool) {
 	// Create file
-	fn := strings.TrimSuffix(name, ".tpl")
-	f, err := os.Create(fmt.Sprintf("%s/%s", p.rootDir, fn))
+	fn := fmt.Sprintf("%s/%s", p.rootDir, strings.TrimSuffix(name, ".tpl"))
+	if _, err := os.Stat(fn); err == nil && !rewrite {
+		// no need to continue if file exists and it shouldn't be rewritten
+		return
+	}
+	f, err := os.Create(fn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -244,7 +249,8 @@ func (p Project) renderFile(name string) {
 }
 
 func (p Project) tidy() {
-	p.renderFile("go.mod.tpl")
+	// go.mod shouldn't be rewritten after manual changes
+	p.renderFile("go.mod.tpl", false)
 	log.Info("Running `go mod tidy`")
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = p.rootDir
