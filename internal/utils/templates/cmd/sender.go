@@ -37,11 +37,39 @@ func (s Sender) FetchResource(ctx context.Context,
 	}, nil
 }
 
+type Query struct {
+	// operationId is required for making a query
+	OperationID string `json:"operationId"`
+	// Optional parameters
+	Parameters interface{} `json:"parameters"`
+	// Optional destination server url for override
+	URL *string `json:"url"`
+}
+
 func (s Sender) Execute(ctx context.Context,
 	in *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
 	log.Infof("Execute called with %s", prototext.Format(in))
 	log.Infof("Resource: %s", in.Resource)
-	log.Infof("Payload: %s", in.Payload)
+	var query Query
+	err := json.Unmarshal(in.Resource, &query)
+    	if err != nil {
+        	return nil, err
+    	}
+	// TODO: from protocol
+	var url string
+	if query.URL != nil {
+		url = *query.URL
+	}
+	// TODO: With options
+	c, err := proto.NewClient(url)
+    	if err != nil {
+        	return nil, err
+    	}
+	// TODO: send resp to another queue
+	_, err = operations[query.OperationID](ctx, c, query.Parameters)
+    	if err != nil {
+        	return nil, err
+    	}
 	return &proto.ExecuteResponse{
 		// For now it doesn't execute anything
 		Response: []byte("success execute"),

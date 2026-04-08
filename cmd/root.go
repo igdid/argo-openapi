@@ -44,6 +44,7 @@ argo-openapi -s https://raw.githubusercontent.com/alserom/telegram-bot-api-spec/
 				opts.target = filepath.Dir(opts.src)
 			}
 		}
+		project.load(opts.src)
 		// after this function opts.target can not be empty
 	},
 }

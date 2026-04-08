@@ -19,11 +19,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/Masterminds/sprig/v3"
+	"github.com/fatih/color"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/igdid/argo-openapi/internal/utils"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
 	"github.com/sirupsen/logrus"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"net/url"
 	"os"
@@ -40,6 +41,7 @@ type Project struct {
 	AppName     string
 	GoVersion   string
 	GoArch      string
+	Operations  []string
 	rootDir     string
 	rootDoc     *openapi3.T
 	protoTarget string
@@ -61,15 +63,14 @@ func (p *Project) createLicenseFile() error {
 	return licenseTemplate.Execute(licenseFile, data)
 }
 
-
 // Create OpenAPI protocol files
 func (p *Project) createOpenAPIFiles(fn string) {
-	p.rootDoc = load(opts.src)
 	cfg := codegen.Configuration{
 		PackageName: "proto",
 		Generate: codegen.GenerateOptions{
-			Models: true,
-			Client: true,
+			Models:     true,
+			Client:     true,
+			ServerURLs: true,
 			//GorillaServer:  true,
 			Strict: true,
 		},
@@ -97,7 +98,6 @@ func showParams(method, name string, operation *openapi3.Operation) {
 }
 
 func (p *Project) validateOpenAPI(cmd *cobra.Command, args []string) {
-	p.rootDoc = load(opts.src)
 	ctx := context.Background()
 
 	if err := p.rootDoc.Validate(ctx); err != nil {
@@ -118,7 +118,6 @@ func FindOperationByID(doc *openapi3.T, operationID string) (*openapi3.Operation
 }
 
 func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
-	p.rootDoc = load(opts.src)
 	if len(args) == 0 {
 		for name, path := range p.rootDoc.Paths.Map() {
 			showParams("get", name, path.Get)
@@ -177,7 +176,7 @@ func isURL(s string) bool {
 	return u.Scheme != "" && u.Host != ""
 }
 
-func load(src string) *openapi3.T {
+func (p *Project) load(src string) {
 	var doc *openapi3.T
 	var err error
 	loader := openapi3.NewLoader()
@@ -194,7 +193,15 @@ func load(src string) *openapi3.T {
 	if doc.Paths == nil {
 		log.Fatal("No paths are inside the file. Nothing to do")
 	}
-	return doc
+	p.rootDoc = doc
+
+	for _, pathItem := range doc.Paths.Map() {
+		for _, op := range pathItem.Operations() {
+			if op != nil {
+				p.Operations = append(p.Operations, op.OperationID)
+			}
+		}
+	}
 }
 
 // Create common files
@@ -209,11 +216,13 @@ func (p *Project) generateSensorProject() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	p.load(opts.src)
 	p.renderFile("main.go.tpl")
 	p.renderFile("Dockerfile")
 	p.renderFile(".dockerignore.tpl")
 	p.renderFile("cmd/root.go")
 	p.renderFile("cmd/sender.go")
+	p.renderFile("cmd/operations.go")
 }
 
 func (p Project) renderFile(name string) {
@@ -227,7 +236,7 @@ func (p Project) renderFile(name string) {
 
 	// Render template
 	tpl, _ := utils.Templates.ReadFile(fmt.Sprintf("templates/%s", name))
-	ftpl := template.Must(template.New(name).Parse(string(tpl)))
+	ftpl := template.Must(template.New(name).Funcs(sprig.TxtFuncMap()).Parse(string(tpl)))
 	err = ftpl.Execute(f, p)
 	if err != nil {
 		log.Fatal(err)

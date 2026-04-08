@@ -4,8 +4,11 @@ metadata:
   name: petstore-sensor
 spec:
   template:
-    container:
-      imagePullPolicy: IfNotPresent
+    spec:
+      containers:
+      - name: main
+        imagePullPolicy: IfNotPresent
+        #image: quay.io/argoproj/argo-events:v1.9.6
   dependencies:
     - name: test
       eventSourceName: petstore-events
@@ -15,30 +18,15 @@ spec:
         name: custom-petstore
         custom:
           serverURL: petstore:81
-          # spec is map of string->string and it is sent over to trigger server.
-          # the spec can be anything you want as per your use-case, just make sure the trigger server understands the spec map.
           spec:
-            # override server url
             url: https://example.com
-          # These parameters are applied on resource fetched and returned by the trigger server.
-          # e.g. consider a trigger server which invokes TektonCD pipeline runs, then
-          # the trigger server can return a TektonCD PipelineRun resource.
-          # The parameters are then applied on that PipelineRun resource.
           parameters:
             - src:
                 dependencyName: test
                 dataKey: body.operationId
-              dest: payload.operationId
-
+              dest: operationId
             - src:
                 dependencyName: test
                 dataKey: body.parameters
                 useRawData: true
-              dest: payload.parameters
-      # These parameters are applied on entire template body.
-      # So that you can parameterize anything under `custom` key such as `serverURL`, `spec` etc.
-      #parameters:
-      #  - src:
-      #      dependencyName: test
-      #      dataKey: body.payload
-      #    dest: custom.spec.payload
+              dest: parameters
