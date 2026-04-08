@@ -8,11 +8,14 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"time"
 )
+
+var cfg Config
 
 type Config struct {
 	EventBus EventBusConfig `yaml:"eventBus"`
@@ -24,10 +27,27 @@ type MetricsConfig struct {
 	Enabled bool `yaml:"enabled"`
 }
 
+func (m MetricsConfig) String() string {
+	if m.Enabled {
+		return "Metrics enabled"
+	} else {
+		return "Metrics disabled"
+	}
+}
+
 type ClientConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 	RetryCount int `yaml:"retryCount"`
 	Backoff BackoffParams `yaml:"backoff"`
+}
+
+func (c ClientConfig) String() string {
+	return fmt.Sprintf("Client: timeout=%v retryCount=%d backoff=%s backoffDelay=%v",
+		c.Timeout,
+		c.RetryCount,
+		c.Backoff.Type,
+		c.Backoff.Delay,
+	)
 }
 
 type BackoffParams struct {
@@ -39,6 +59,10 @@ type BackoffParams struct {
 type EventBusConfig struct {
 	Type string `yaml:"type"`
 	Nats NatsConfig `yaml:"nats"`
+}
+
+func (e EventBusConfig) String() string {
+	return fmt.Sprintf("Using %s event bus: %s, secure: %v", e.Type, e.Nats.URL, e.Nats.Secure)
 }
 
 type NatsConfig struct {
