@@ -28,17 +28,22 @@ func decodeParams[T any](v interface{}) (*T, error) {
 	return &out, nil
 }
 
-type OperationFunc func(ctx context.Context, client *proto.Client, params interface{}) (*http.Response, error)
+type ClientWrapper struct {
+	client *proto.Client
+}
 
-var operations = map[string]OperationFunc{
-{{- range .Operations }}
-	"{{ . }}": func(ctx context.Context, client *proto.Client, params interface{}) (*http.Response, error) {
-		p, err := decodeParams[proto.{{ . | title }}Params](params)
-		if err != nil {
-			return nil, err
-		}
+{{- range $op, $parameters := .Operations }}
 
-		return client.{{ . | title }}(ctx, p)
-	},
+func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params interface{}) (*http.Response, error) {
+{{- if eq (len $parameters) 0 }}
+	return c.client.{{ $op | title }}(ctx)
+{{- else }}
+	p, err := decodeParams[proto.{{ $op | title }}Params](params)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.client.{{ $op | title }}(ctx, p)
 {{- end }}
 }
+{{- end }}
