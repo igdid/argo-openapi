@@ -14,20 +14,6 @@ import (
 	"net/http"
 )
 
-func decodeParams[T any](v interface{}) (*T, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-
-	var out T
-	if err := json.Unmarshal(data, &out); err != nil {
-		return nil, err
-	}
-
-	return &out, nil
-}
-
 type ClientWrapper struct {
 	client *proto.Client
 }
@@ -38,12 +24,17 @@ func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params interface{
 {{- if eq (len $parameters) 0 }}
 	return c.client.{{ $op | title }}(ctx)
 {{- else }}
-	p, err := decodeParams[proto.{{ $op | title }}Params](params)
-	if err != nil {
-		return nil, err
+	{{- $pathParams := "" }}
+	{{- range $i, $param := $parameters }}
+		{{- if eq $param.Value.In "path" }}
+	{{ $param.Value.Name }}, ok := q.Parameters["{{ $param.Value.Name }}"].({{ index $param.Value.Schema.Value.Type 0 }})
+	if !ok {
+		return nil, fmt.Errorf("{{ $param.Value.Name }} is required")
 	}
-
-	return c.client.{{ $op | title }}(ctx, p)
+		{{- $pathParams = printf "%s, %s" $pathParams $param.Value.Name }}
+		{{- end }}
+	{{- end }}
+	return c.client.{{ $op | title }}(ctx{{ $pathParams }})
 {{- end }}
 }
 {{- end }}
