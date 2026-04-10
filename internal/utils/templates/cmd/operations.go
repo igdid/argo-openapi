@@ -20,16 +20,16 @@ type ClientWrapper struct {
 
 {{- range $op, $parameters := .Operations }}
 
-func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params interface{}) (*http.Response, error) {
+func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params map[string]interface{}) (*http.Response, error) {
 {{- if eq (len $parameters) 0 }}
 	return c.client.{{ $op | title }}(ctx)
 {{- else }}
 	{{- $pathParams := "" }}
 	{{- range $i, $param := $parameters }}
 		{{- if eq $param.Value.In "path" }}
-	{{ $param.Value.Name }}, ok := q.Parameters["{{ $param.Value.Name }}"].({{ index $param.Value.Schema.Value.Type 0 }})
+	{{ $param.Value.Name }}, ok := params["{{ $param.Value.Name }}"].({{ index $param.Value.Schema.Value.Type 0 }})
 	if !ok {
-		return nil, fmt.Errorf("{{ $param.Value.Name }} is required")
+		return nil, fmt.Errorf("{{ $param.Value.Name }} is required in path")
 	}
 		{{- $pathParams = printf "%s, %s" $pathParams $param.Value.Name }}
 		{{- end }}

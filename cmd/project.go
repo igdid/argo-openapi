@@ -105,17 +105,6 @@ func (p Project) validateOpenAPI(cmd *cobra.Command, args []string) {
 	log.Info("OpenAPI spec is valid")
 }
 
-func FindOperationByID(doc *openapi3.T, operationID string) (*openapi3.Operation, string, string) {
-	for path, pathItem := range doc.Paths.Map() {
-		for method, op := range pathItem.Operations() {
-			if op != nil && op.OperationID == operationID {
-				return op, method, path
-			}
-		}
-	}
-	return nil, "", ""
-}
-
 func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		for name, path := range p.rootDoc.Paths.Map() {
