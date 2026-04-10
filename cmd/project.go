@@ -23,6 +23,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/igdid/argo-openapi/internal/utils"
+	"github.com/igdid/argo-openapi/internal/openapiutil"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -118,9 +119,9 @@ func (p *Project) operationInfo(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		opId := args[0]
-		op, method, path := FindOperationByID(p.rootDoc, opId)
-		if op == nil {
-			log.Fatalf("Operation %s not found", opId)
+		op, method, path, err := openapiutil.FindOperation(p.rootDoc, opId)
+		if err != nil {
+			log.Fatalf("FindOperation: %s - %v", opId, err)
 		}
 		color.New(color.FgGreen).Print(method)
 		fmt.Print(" ")

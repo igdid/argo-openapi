@@ -17,14 +17,13 @@ type OperationParams struct {
 	Other []ParamInfo
 }
 
-// FindOperation ищет operation по operationID во всём документе.
 func FindOperation(doc *openapi3.T, operationID string) (*openapi3.Operation, string, string, error) {
 	if doc == nil {
 		return nil, "", "", fmt.Errorf("nil document")
 	}
 
 	for path, pathItem := range doc.Paths.Map() {
-		for method, op := range operationsFromPathItem(pathItem) {
+		for method, op := range pathItem.Operations() {
 			if op != nil && op.OperationID == operationID {
 				return op, method, path, nil
 			}
@@ -64,31 +63,17 @@ func ExtractOperationParams(op *openapi3.Operation) *OperationParams {
 	return result
 }
 
-func operationsFromPathItem(pathItem *openapi3.PathItem) []*openapi3.Operation {
-	if pathItem == nil {
-		return nil
-	}
-
-	return []*openapi3.Operation{
-		pathItem.Get,
-		pathItem.Post,
-		pathItem.Put,
-		pathItem.Delete,
-		pathItem.Patch,
-		pathItem.Head,
-		pathItem.Options,
-		pathItem.Trace,
-	}
-}
-
 func goTypeFromSchema(schemaRef *openapi3.SchemaRef) string {
 	if schemaRef == nil || schemaRef.Value == nil {
 		return "interface{}"
 	}
 
 	schema := schemaRef.Value
+	if schema.Type == nil {
+		return "interface{}"
+	}
 
-	switch schema.Type {
+	switch (*schema.Type)[0] {
 	case "string":
 		switch schema.Format {
 		case "date-time":
@@ -138,4 +123,3 @@ func goTypeFromSchema(schemaRef *openapi3.SchemaRef) string {
 		return "interface{}"
 	}
 }
-
