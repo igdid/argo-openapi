@@ -20,7 +20,7 @@ type ClientWrapper struct {
 
 {{- range $op, $parameters := .Operations }}
 
-func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params map[string]interface{}) (*http.Response, error) {
+func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params map[string]interface{}, reqEditors ...proto.RequestEditorFn) (*http.Response, error) {
 	{{- $pathParams := "" }}
 	{{- $otherParams := "" }}
 	{{- range $i, $param := $parameters.Path }}
