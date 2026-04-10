@@ -42,7 +42,7 @@ type Project struct {
 	AppName     string
 	GoVersion   string
 	GoArch      string
-	Operations  map[string]openapi3.Parameters
+	Operations  map[string]openapiutil.OperationParams
 	rootDir     string
 	rootDoc     *openapi3.T
 	protoTarget string
@@ -184,11 +184,11 @@ func (p *Project) load(src string) {
 	}
 	p.rootDoc = doc
 
-	p.Operations = map[string]openapi3.Parameters{}
+	p.Operations = map[string]openapiutil.OperationParams{}
 	for _, pathItem := range doc.Paths.Map() {
 		for _, op := range pathItem.Operations() {
 			if op != nil {
-				p.Operations[strings.Title(op.OperationID)] = op.Parameters
+				p.Operations[strings.Title(op.OperationID)] = openapiutil.ExtractOperationParams(op)
 			}
 		}
 	}

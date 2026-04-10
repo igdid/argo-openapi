@@ -33,12 +33,8 @@ func FindOperation(doc *openapi3.T, operationID string) (*openapi3.Operation, st
 	return nil, "", "", fmt.Errorf("operation %q not found", operationID)
 }
 
-func ExtractOperationParams(op *openapi3.Operation) *OperationParams {
-	result := &OperationParams{}
-
-	if op == nil {
-		return result
-	}
+func ExtractOperationParams(op *openapi3.Operation) OperationParams {
+	result := OperationParams{}
 
 	for _, paramRef := range op.Parameters {
 		if paramRef == nil || paramRef.Value == nil {

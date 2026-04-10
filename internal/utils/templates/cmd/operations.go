@@ -21,20 +21,30 @@ type ClientWrapper struct {
 {{- range $op, $parameters := .Operations }}
 
 func (c ClientWrapper) {{ $op | title }} (ctx context.Context, params map[string]interface{}) (*http.Response, error) {
-{{- if eq (len $parameters) 0 }}
-	return c.client.{{ $op | title }}(ctx)
-{{- else }}
 	{{- $pathParams := "" }}
-	{{- range $i, $param := $parameters }}
-		{{- if eq $param.Value.In "path" }}
-	{{ $param.Value.Name }}, ok := params["{{ $param.Value.Name }}"].({{ index $param.Value.Schema.Value.Type 0 }})
+	{{- $otherParams := "" }}
+	{{- range $i, $param := $parameters.Path }}
+	{{ $param.Name }}, ok := params["{{ $param.Name }}"].({{ $param.Type }})
 	if !ok {
-		return nil, fmt.Errorf("{{ $param.Value.Name }} is required in path")
-	}
-		{{- $pathParams = printf "%s, %s" $pathParams $param.Value.Name }}
+		{{- if $param.Required }}
+		return nil, fmt.Errorf("{{ $param.Name }} is required in path")
+		{{- else }}
+		log.Warn("{{ $param.Name }} does not exist or has a wrong type")
 		{{- end }}
+	}
+		{{- $pathParams = printf "%s, %s" $pathParams $param.Name }}
 	{{- end }}
-	return c.client.{{ $op | title }}(ctx{{ $pathParams }})
-{{- end }}
+	{{- if gt (len $parameters.Other) 0 }}
+	var p {{ $op }}Params
+	{{- range $i, $param := $parameters.Other }}
+	{{- $isPointer := "" }}
+	{{- if not $param.Required }}
+	{{- $isPointer = "*" }}
+	{{- end }}
+	p.{{ $param.Name }}, _ = params["{{ $param.Name }}"].({{ $isPointer }}{{ $param.Type }})
+	{{- end }}
+	{{- $otherParams = printf ", p"}}
+	{{- end }}
+	return c.client.{{ $op | title }}(ctx{{ $pathParams }}{{ $otherParams }})
 }
 {{- end }}
